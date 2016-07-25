@@ -1,0 +1,12 @@
+{
+    "name": "aenglander/iot-example",
+    "require": {
+        "icicleio/http": "*",
+        "icicleio/filesystem": "^0.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "aenglander\\IoT\\Example\\": "src/"
+        }
+    }
+}

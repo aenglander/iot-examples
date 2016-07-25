@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        var socket = null;
+        var isopen = false;
+
+        window.onload = function () {
+
+            socket = new WebSocket("ws://" + document.location.hostname + "/socket");
+            socket.binaryType = "arraybuffer";
+
+            socket.onopen = function () {
+                console.log("Connected!");
+                socket.send(JSON.stringify({action: 'status'}))
+                isopen = true;
+            }
+
+            socket.onmessage = function (e) {
+                var message
+                if (typeof e.data == "string") {
+                    console.log("Text message received: " + e.data);
+                    if (message = JSON.parse(e.data)) {
+                        if (message.hasOwnProperty('status')) {
+                            document.getElementById('status').innerHTML = message.status ? 'ON' : 'OFF'
+                        } else if (message.hasOwnProperty('error')) {
+                            alert(message.error);
+                        } else {
+                            console.log('Unhandled message received: ' + JSON.stringify(message))
+                        }
+                    }
+                } else {
+                    var arr = new Uint8Array(e.data);
+                    var hex = '';
+                    for (var i = 0; i < arr.length; i++) {
+                        hex += ('00' + arr[i].toString(16)).substr(-2);
+                    }
+                    console.log("Binary message received: " + hex);
+                }
+            }
+
+            socket.onclose = function (e) {
+                console.log("Connection closed.");
+                socket = null;
+                isopen = false;
+            }
+        };
+
+        function send(data) {
+            var message;
+            if (isopen) {
+                message = data instanceof Object ? JSON.stringify(data) : data;
+                socket.send(message);
+                console.log("Message sent: " + message);
+            } else {
+                console.log("Connection not opened.")
+            }
+        }
+        ;
+
+        function turnOff() {
+            send({action: 'set', value: false});
+        }
+
+        function turnOn() {
+            send({action: 'set', value: true});
+        }
+
+        function sendBinary() {
+            if (isopen) {
+                var buf = new ArrayBuffer(32);
+                var arr = new Uint8Array(buf);
+                for (i = 0; i < arr.length; ++i) arr[i] = i;
+                socket.send(buf);
+                console.log("Binary message sent.");
+            } else {
+                console.log("Connection not opened.")
+            }
+        }
+        ;
+    </script>
+</head>
+<body>
+<h1>Multi-Remote</h1>
+
+<p>Status: <strong><span id="status">Unknown</span></strong></p>
+<button onclick="turnOff()">Turn OFF</button>
+<button onclick="turnOn()">Turn ON</button>
+
+</body>
+</html>
