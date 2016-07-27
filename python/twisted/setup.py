@@ -15,6 +15,6 @@ setup(
     summary='IoT Example for Twisted',
     license='MIT',
     description='An example for IoT in Twisted',
-    install_requires=['autobahn', 'twisted', 'pyOpenSSL', 'service-identity'],
+    install_requires=['autobahn', 'twisted', 'pyOpenSSL', 'RPi.GPIO', 'service-identity'],
     data_files=[]
 )

@@ -3,8 +3,8 @@ from autobahn.twisted.resource import WebSocketResource
 from twisted.application import service
 from twisted.internet import reactor
 from twisted.web import static, server
-from multi_remote.gpio import GPIOHandler
-from multi_remote.socket_server import ServerFactory, ServerProtocol
+from iot_twisted.gpio import GPIOHandler
+from iot_twisted.socket_server import ServerFactory, ServerProtocol
 
 
 class Service(service.Service):
@@ -18,7 +18,7 @@ class Service(service.Service):
 
         factory = ServerFactory()
         factory.status = False
-        factory.led = GPIOHandler(22)
+        factory.led = GPIOHandler(self.pin)
         factory.protocol = ServerProtocol
         # factory.setProtocolOptions(maxConnections=2)
         factory.startFactory()

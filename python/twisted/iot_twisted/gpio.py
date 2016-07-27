@@ -17,5 +17,5 @@ class GPIOHandler(object):
 
     def __change(self, value):
         GPIO.setup(self.pin, GPIO.OUT)
-        GPIO.output(self.pin, not value)
+        GPIO.output(self.pin, value)
         self.status = value
