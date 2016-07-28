@@ -9,6 +9,6 @@ from iot_twisted.service import Service
 
 log.startLogging(sys.stdout)
 
-Service(80, 22).startService()
+Service(8080, 40).startService()
 
 reactor.run()

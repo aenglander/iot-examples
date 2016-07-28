@@ -1,1 +1,1 @@
-echo 44 > /sys/class/gpio/export
+echo 40 > /sys/class/gpio/export

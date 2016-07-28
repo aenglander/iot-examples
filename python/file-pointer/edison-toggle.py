@@ -13,14 +13,14 @@ def read(location):
     return __value
 
 
-if not os.path.exists("/sys/class/gpio/gpio44"):
-    write("/sys/class/gpio/export", "44")
-    write("/sys/class/gpio/gpio44/direction", "out")
+if not os.path.exists("/sys/class/gpio/gpio40"):
+    write("/sys/class/gpio/export", "40")
+    write("/sys/class/gpio/gpio40/direction", "out")
 
-current = read("/sys/class/gpio/gpio44/value")
+current = read("/sys/class/gpio/gpio40/value")
 if current == "1":
-    write("/sys/class/gpio/gpio44/value", "0")
+    write("/sys/class/gpio/gpio40/value", "0")
     print "off"
 else:
-    write("/sys/class/gpio/gpio44/value", "1")
+    write("/sys/class/gpio/gpio40/value", "1")
     print "on"
