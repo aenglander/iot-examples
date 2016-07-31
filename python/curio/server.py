@@ -36,11 +36,11 @@ async def iot_client(client, addr):
     print('Connection closed')
 
 async def prep_pin(pin):
-    if not await run_in_thread(os.path.exists, u"/sys/class/gpio/gpio".format(pin)):
+    direction_file = u"/sys/class/gpio/gpio{}/direction".format(pin)
+    if not await run_in_thread(os.path.exists, direction_file):
         async with aopen("/sys/class/gpio/export", "w") as export:
             await export.write(pin)
             print("Pin {} exported...waiting for direction file to appear".format(pin))
-            direction_file = u"/sys/class/gpio/gpio{}/direction".format(pin)
             while not await run_in_thread(os.path.isfile, direction_file):
                 await sleep(0)
             print("Direction file found. Setting direction out for pin".format(pin))
