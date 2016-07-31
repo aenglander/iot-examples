@@ -2,6 +2,7 @@ from curio import run, spawn, run_in_thread, sleep
 from curio.socket import *
 from curio.file import *
 import os
+import mraa
 
 async def echo_server(address):
     sock = socket(AF_INET, SOCK_STREAM)
@@ -25,42 +26,21 @@ async def iot_client(client, addr):
 
             pin = data[:2].decode()
             value = data[2:3].decode()
-            print("Preparing pin {} if necessary".format(pin))
-            await prep_pin(pin)
-            print("Writing value \"{}\" to pin {}".format(value, pin))
-            await write_pin_data(pin, value)
-            new_value = await read_pin_data(pin)
-            result = "OK" if new_value == value else "ERROR"
+            try:
+                await run_in_thread(set_data, pin, value)
+                result = "OK"
+            except Exception as e:
+                print("Error: {}".format(e))
+                result = "ERROR"
             result += "\r\n"
             await client.sendall(result.encode())
     print('Connection closed')
 
-async def prep_pin(pin):
-    direction_file = u"/sys/class/gpio/gpio{}/direction".format(pin)
-    if not await run_in_thread(os.path.exists, direction_file):
-        async with aopen("/sys/class/gpio/export", "w") as export:
-            await export.write(pin)
-            print("Pin {} exported...waiting for direction file to appear".format(pin))
-            while not await run_in_thread(os.path.isfile, direction_file):
-                await sleep(0)
-            print("Direction file found. Setting direction out for pin".format(pin))
-            async with aopen(direction_file, "w") as direction:
-                await direction.write("out")
-            print("Direction written for pin {}".format(pin))
-            return None
-
-async def write_pin_data(pin, value):
-    print(u'Writing "{}" to pin {}'.format(value, pin))
-    async with aopen(u"/sys/class/gpio/gpio{}/value".format(pin), "w") as pin_file:
-        return await pin_file.write(value)
-
-
-async def read_pin_data(pin):
-    async with aopen(u"/sys/class/gpio/gpio{}/value".format(pin), "r") as pin_file:
-        value = await pin_file.read()
-        print('Pin {} now has value of "{}"'.format(pin, value))
-        return value
-
+def set_data(pin, value):
+    gpio = mraa.Gpio(int(pin))
+    gpio.dir(mraa.DIR_OUT)
+    gpio.write(int(value))
+    return gpio.read()
 
 if __name__ == '__main__':
     try:
