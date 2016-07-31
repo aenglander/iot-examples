@@ -25,7 +25,9 @@ async def iot_client(client, addr):
 
             pin = data[:2].decode()
             value = data[2:3].decode()
+            print("Preparing pin {} if necessary".format(pin))
             await prep_pin(pin)
+            print("Writing value \"{}\" to pin {}".format(value, pin))
             await write_pin_data(pin, value)
             new_value = await read_pin_data(pin)
             result = "OK" if new_value == value else "ERROR"
@@ -37,11 +39,15 @@ async def prep_pin(pin):
     if not await run_in_thread(os.path.exists, u"/sys/class/gpio/gpio".format(pin)):
         async with aopen("/sys/class/gpio/export", "w") as export:
             await export.write(pin)
+            print("Pin {} exported...waiting for direction file to appear".format(pin))
             direction_file = u"/sys/class/gpio/gpio{}/direction".format(pin)
             while not await run_in_thread(os.path.isfile, direction_file):
                 await sleep(0)
+            print("Direction file found. Setting direction out for pin".format(pin))
             async with aopen(direction_file, "w") as direction:
-                return await direction.write("out")
+                await direction.write("out")
+            print("Direction written for pin {}".format(pin))
+            return None
 
 async def write_pin_data(pin, value):
     print(u'Writing "{}" to pin {}'.format(value, pin))
@@ -58,6 +64,6 @@ async def read_pin_data(pin):
 
 if __name__ == '__main__':
     try:
-        run(echo_server(('', 25000)))
+        run(echo_server(('0.0.0.0', 25000)))
     except KeyboardInterrupt:
         print("Exit requested via keyboard interrupt")
